@@ -55,8 +55,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero
         };
     });
+var rawConnectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PostgresConnection")
+                          ?? builder.Configuration.GetConnectionString("PostgresConnection")
+                          ?? string.Empty;
+
+if (rawConnectionString.StartsWith("postgresql://") || rawConnectionString.StartsWith("postgres://"))
+{
+    var uri = new Uri(rawConnectionString);
+    var userInfo = uri.UserInfo.Split(':');
+    var npgsqlBuilder = new Npgsql.NpgsqlConnectionStringBuilder
+    {
+        Host = uri.Host,
+        Port = uri.Port > 0 ? uri.Port : 5432,
+        Database = uri.AbsolutePath.TrimStart('/'),
+        Username = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : string.Empty,
+        Password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty
+    };
+    rawConnectionString = npgsqlBuilder.ConnectionString;
+}
+
 builder.Services.AddDbContext<ApiDbContext>(
-    options => options.UseNpgsql(builder.Configuration.GetConnectionString("PostgresConnection")));
+    options => options.UseNpgsql(rawConnectionString));
 builder.Services.AddSingleton<JwtTokenHelper>();
 builder.Host.UseSerilog();
 

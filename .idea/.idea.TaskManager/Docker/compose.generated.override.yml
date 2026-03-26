@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  taskmanager:
+    build:
+      context: "/home/sero/RiderProjects/TaskManager"
+      dockerfile: "TaskManager/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/TaskManager.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "taskmanager:dev"
+    ports: []
+    volumes:
+    - "/home/sero/RiderProjects/TaskManager/TaskManager:/app:rw"
+    - "/home/sero/RiderProjects/TaskManager:/src:rw"
+    - "/home/sero/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"
